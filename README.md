@@ -5,10 +5,6 @@ fashioned resturaunt. Try to end up with one peg in order to satisfy your ego,
 or submit to your inevitable doom and shame of querying Google for the solution.
 Created using HTML5 and JavaScript utilizing the KineticJS Canvas API.
 
-Play the [**demo**][1] now!
-
-Created using HTML5 and JavaScript, utilizing the KineticJS Canvas API using a
-single wood texture. Should work on mobile as well, minimal support is there
-however.
+Play the [**demo**][1]!
 
 [1]: http://coryg89.github.com/PegGame
