@@ -9,7 +9,7 @@ var boardTexture = new Image();
 
 /** Main entry point for our program on texture load */
 boardTexture.onload = function () { init(); };
-boardTexture.src = '/images/wood-texture.jpg';
+boardTexture.src = '/img/wood-texture.jpg';
 
 /** Properties which can be set to customize the game */
 var stageWidth = 800;
