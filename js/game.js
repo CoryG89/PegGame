@@ -1,4 +1,4 @@
-/** Cracker Barrel Peg Game
+﻿/** Cracker Barrel Peg Game
  *
  *  Author: Cory Gross
  *  Last modified: April 3, 2013
@@ -9,10 +9,11 @@ var boardTexture = new Image();
 
 /** Main entry point for our program on texture load */
 boardTexture.onload = function () { init(); };
+boardTexture.src = '/images/wood-texture.jpg';
 
 /** Properties which can be set to customize the game */
-var stageWidth = 650;
-var stageHeight = 550;
+var stageWidth = 800;
+var stageHeight = 600;
 var pegColor = '#dcdcdc';
 var holeColor = '#3E0906';
 var boardStrokeColor = '#4E1207';
@@ -21,16 +22,16 @@ var pegStrokeColor = 'white';
 var activeStrokeColor = 'yellow';
 var jumpStrokeColor = 'red';
 var landStrokeColor = 'blue';
-boardTexture.src = 'img/wood-texture.jpg';
 
 /** Declare variables to store our game objects */
-var stage, boardLayer, pegLayer, textLayer;
+var stage, bgLayer, pegLayer, textLayer;
 var hole, holeCount, peg, pegCount, pegsRemaining;
 var validMoves, boardPos, boardCenter;
 var hud, hudRect;
 var pegsRemainingText, scoringText, resetButtonText;
 
 function init() {
+
     /** Create our KineticJS stage using our canvas container */
     stage = new Kinetic.Stage({
         container: 'container',
@@ -39,9 +40,14 @@ function init() {
     });
 
     /** Create all needed game layers */
-    boardLayer = new Kinetic.Layer();
+    bgLayer = new Kinetic.Layer();
     pegLayer = new Kinetic.Layer();
     textLayer = new Kinetic.Layer();
+
+    var background = new Kinetic.Rect({
+        width: 800, height: 600, fill: 'white'
+    });
+    bgLayer.add(background);
 
     boardCenter = { x: stage.getWidth() / 2 - 80, y: stage.getWidth() / 2 + 50 };
 
@@ -114,26 +120,16 @@ function init() {
         }
     }
 
-	
 	var hud = new Kinetic.Group({
-		x: 325, y: 20
+		x: 450, y: 20
 	});
 	
 	var mainHud = new Kinetic.Group();
-	
-	var resetButton = new Kinetic.Group({
-		x: 88, y: 180
-	});
 	
 	var mainHudRect = new Kinetic.Rect({
 		width: 320, height: 160,
 		stroke: '#4E1207', strokeWidth: 3,
 		fillPatternImage: boardTexture
-	});
-	
-	var resetButtonRect = new Kinetic.Rect({
-		width: 150, height: 35,
-		fill: '#DA9E62', stroke: '#4E1207', strokeWidth: 3
 	});
 	
     /** Create on-screen counter to indicate number of pegs remaining */
@@ -163,27 +159,31 @@ function init() {
         width: 320,
         align: 'center'
     });
+	
+	mainHud.add(mainHudRect);
+	mainHud.add(pegsRemainingText);
+	mainHud.add(scoringText);
+	hud.add(mainHud);
 
-    resetButtonText = new Kinetic.Text({
-        fill: '#4E1207',
-        text: 'Reset Game',
-        fontSize: 18,
-        fontFamily: 'Calibri',
-        fontStyle: 'bold',
-        width: 150,
-		padding: resetButtonRect.getHeight() / 4,
-        align: 'center'
-    });
-	
-	resetButton.add(resetButtonRect);
-	resetButton.add(resetButtonText);
-	
-	hud.add(resetButton);
-	
-	hud.add(mainHudRect);
-	hud.add(pegsRemainingText);
-	hud.add(scoringText);
+	var resetButton = new Kinetic.Group({
+	    x: 88, y: 180
+	});
 
+	var resetButtonRect = new Kinetic.Rect({
+	    width: 150, height: 35,
+	    fill: '#DA9E62', stroke: '#4E1207', strokeWidth: 3
+	});
+
+	resetButtonText = new Kinetic.Text({
+	    fill: '#4E1207',
+	    text: 'Reset Game',
+	    fontSize: 18,
+	    fontFamily: 'Calibri',
+	    fontStyle: 'bold',
+	    width: 150,
+	    padding: resetButtonRect.getHeight() / 4,
+	    align: 'center'
+	});
 	
     resetButton.on('mouseover', function () {
         resetButtonRect.setFill('#EAAE72');
@@ -197,21 +197,26 @@ function init() {
         textLayer.draw();
     });
 
-    resetButton.on('click', function () {
+    resetButton.on('click tap', function () {
         if (pegsRemaining != 14) resetGame();
     });
 	
+    resetButton.add(resetButtonRect);
+    resetButton.add(resetButtonText);
+    hud.add(resetButton);
+
+
     /** Add all objects to their respective layers */
     textLayer.add(hud);
 
-    boardLayer.add(wood);
+    bgLayer.add(wood);
     for (var i = 0; i < holeCount; i++) {
         pegLayer.add(hole[i]);
         if (i < 14) pegLayer.add(peg[i]);
     }
 
     /** Add all of the game layers to the stage */
-    stage.add(boardLayer);
+    stage.add(bgLayer);
     stage.add(pegLayer);
     stage.add(textLayer);
 
@@ -387,20 +392,23 @@ function buildMoveList() {
         }
     }
     if (numValidMoves == 0) {
+        var msg = null;
         switch (pegsRemaining) {
             case 1:
-                alert('You\'re a genius!!');
+                msg = 'You\'re a genius!!';
                 break;
             case 2:
-                alert('You\'re pretty smart.');
+                msg = 'You\'re pretty smart.';
                 break;
             case 3:
-                alert('You\'re just average.');
+                msg = 'You\'re just average.';
                 break;
             default:
-                alert('You\'re just plain dumb!!');
+                msg = 'You\'re just plain dumb!!';
                 break;
         }
+        var gameOverDialog = new Windows.UI.Popups.MessageDialog(msg);
+        gameOverDialog.showAsync();
     }
 }
 
