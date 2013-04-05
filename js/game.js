@@ -9,7 +9,7 @@ var boardTexture = new Image();
 
 /** Main entry point for our program on texture load */
 boardTexture.onload = function () { init(); };
-boardTexture.src = 'img/wood-texture.jpg';
+boardTexture.src = '/img/wood-texture.jpg';
 
 /** Properties which can be set to customize the game */
 var stageWidth = 800;
@@ -407,8 +407,7 @@ function buildMoveList() {
                 msg = 'You\'re just plain dumb!!';
                 break;
         }
-        var gameOverDialog = new Windows.UI.Popups.MessageDialog(msg);
-        gameOverDialog.showAsync();
+        alert(msg);
     }
 }
 
