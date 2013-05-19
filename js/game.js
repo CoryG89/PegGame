@@ -15,7 +15,9 @@ boardTexture.src = 'img/wood-texture.jpg';
 var stageWidth = 800;
 var stageHeight = 600;
 var pegColor = '#dcdcdc';
+var pegRadius = 15;
 var holeColor = '#3E0906';
+var holeRadius = 9;
 var boardStrokeColor = '#4E1207';
 var holeStrokeColor = '#090909';
 var pegStrokeColor = 'white';
@@ -127,7 +129,7 @@ function init() {
 	var mainHud = new Kinetic.Group();
 	
 	var mainHudRect = new Kinetic.Rect({
-		width: 320, height: 160,
+		width: 325, height: 160,
 		stroke: '#4E1207', strokeWidth: 3,
 		fillPatternImage: boardTexture
 	});
@@ -156,7 +158,7 @@ function init() {
         fontFamily: 'Calibri',
 		lineHeight: 1.5,
 		padding: 10,
-        width: 320,
+        width: 325,
         align: 'center'
     });
 	
@@ -229,7 +231,7 @@ function createHole(posX, posY) {
     return new Kinetic.Circle({
         x: posX,
         y: posY,
-        radius: 8,
+        radius: holeRadius,
         fill: holeColor,
         stroke: holeStrokeColor,
         strokeWidth: 2
@@ -241,7 +243,7 @@ function createPeg(posX, posY) {
     return new Kinetic.Circle({
         x: posX,
         y: posY,
-        radius: 11,
+        radius: pegRadius,
         fill: pegColor,
         shadow: { color: 'black', blur: 10, offset: [0, -5], opacity: 0.7 },
         stroke: pegStrokeColor,
@@ -307,7 +309,6 @@ function setPegEnabled(index, boolValue) {
     else return false;
 }
 
-
 /** Returns whether or not a peg is near a hole based on a
     certain offset */
 function isPegNearHole(pegIndex, holeIndex) {
@@ -319,7 +320,7 @@ function isPegNearHole(pegIndex, holeIndex) {
     var holeY = boardPos[holeIndex].y;
 
     /** Set a threshold offset */
-    var offset = 20;
+    var offset = 30;
 
     var xAligned = pegX > holeX - offset && pegX < holeX + offset;
     var yAligned = pegY > holeY - offset && pegY < holeY + offset;
@@ -328,7 +329,6 @@ function isPegNearHole(pegIndex, holeIndex) {
     if (xAligned && yAligned) return true;
     else return false;
 }
-
 
 /** Sets the board position of a peg at a given index to the
     position indicated by pos */
@@ -455,11 +455,8 @@ function getPegIndex(peg) {
 function activatePeg(peg) {
 
     peg.setDraggable(true);
-
     peg.on('dragstart', function () { return onActivePegDragStart(peg); });
-
     peg.on('dragend', function () { return onActivePegDragEnd(peg); });
-
     peg.on('mouseover', function () {
         peg.setStroke(activeStrokeColor);
         pegLayer.draw();
@@ -513,7 +510,7 @@ function clearMoveList() {
 /** Invoked on an active peg when it is dragged, this will add
     strokes to indicate the possible moves */
 function onActivePegDragStart(peg) {
-    var moveList = validMoves[getPegIndex(peg)];
+    var moveList = validMoves[peg.attrs.pegIndex];
 
     for (var i = 0; i < moveList.length; i++) {
         var move = moveList[i];
@@ -522,9 +519,7 @@ function onActivePegDragStart(peg) {
         jumpPeg.setStroke(jumpStrokeColor);
         hole[move.landPos].setStroke(landStrokeColor);
     }
-
     peg.moveToTop();
-    pegLayer.draw();
 }
 
 /** Invoked on an active peg when it is dropped, this will update
