@@ -41,6 +41,11 @@ function init() {
         height: stageHeight
     });
 
+    /** Workaround for buggy drag/drop behavior in Chrome with Kinetic 4.5.1 */
+    stage.getContent().addEventListener('mousedown', function (event) {
+        event.preventDefault();
+    });
+
     /** Create all needed game layers */
     bgLayer = new Kinetic.Layer();
     pegLayer = new Kinetic.Layer();
@@ -151,8 +156,9 @@ function init() {
     scoringText = new Kinetic.Text({
         y: 40,
         fill: '#4E1207',
-        text: 'Leave 1 peg and you\'re a genius.\nLeave 2 pegs and you\'re pretty smart.'
-            + '\nLeave 3 pegs and you\'re just average.\nLeave 4 or more and you\'re just plain dumb.',
+        text: 'Leave 1 peg and you\'re a genius.\nLeave 2 pegs and you\'re ' +
+        'pretty smart.\nLeave 3 pegs and you\'re just average.\nLeave 4 or ' +
+        'more and you\'re just plain dumb.',
         fontSize: 16,
 		fontStyle: 'bold',
         fontFamily: 'Calibri',
