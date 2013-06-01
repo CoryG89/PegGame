@@ -129,7 +129,7 @@ function init() {
 	var mainHud = new Kinetic.Group();
 	
 	var mainHudRect = new Kinetic.Rect({
-		width: 325, height: 160,
+		width: 335, height: 160,
 		stroke: '#4E1207', strokeWidth: 3,
 		fillPatternImage: boardTexture
 	});
@@ -159,7 +159,7 @@ function init() {
         fontFamily: 'Calibri',
 		lineHeight: 1.5,
 		padding: 10,
-        width: 325,
+        width: 335,
         align: 'center'
     });
 	
