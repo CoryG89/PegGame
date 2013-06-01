@@ -41,11 +41,6 @@ function init() {
         height: stageHeight
     });
 
-    /** Workaround for buggy drag/drop behavior in Chrome with Kinetic 4.5.1 */
-    stage.getContent().addEventListener('mousedown', function (event) {
-        event.preventDefault();
-    });
-
     /** Create all needed game layers */
     bgLayer = new Kinetic.Layer();
     pegLayer = new Kinetic.Layer();
