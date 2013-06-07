@@ -1,11 +1,8 @@
-﻿/** Cracker Barrel Peg Game
- *
+﻿/**
  *  Author: Cory Gross
  *  Last modified: June 6, 2013
  **/
-
 (function () {
-
     /** Load assets before anything else, initialize only after */
     var boardTexture = new Image();
     boardTexture.onload = function () { init(); };
@@ -29,8 +26,7 @@
     var stage, bgLayer, pegLayer, textLayer;
     var hole, holeCount, peg, pegCount, pegsRemaining;
     var validMoves, boardPos, boardCenter;
-    var hud, hudRect;
-    var pegsRemainingText, scoringText, resetButtonText;
+    var pegsRemainingText;
 
     function init() {
         var containerElement = document.getElementById('container');
@@ -132,7 +128,6 @@
                     /** Make sure the last hole is not marked occupied */
                     setHoleOccupied(holeCount, false);
                 }
-
                 holeCount++; 
             }
         }
@@ -140,88 +135,8 @@
         var hud = new Kinetic.Group({
             x: 430, y: 30
         });
-
-        var mainHud = new Kinetic.Group();
-
-        var mainHudRect = new Kinetic.Rect({
-            width: 335, height: 160,
-            stroke: '#4E1207', strokeWidth: 3,
-            fillPatternImage: boardTexture
-        });
-
-        /** Create on-screen counter to indicate number of pegs remaining */
-        pegsRemainingText = new Kinetic.Text({
-            fill: '#4E1207',
-            text: 'Pegs Remaining: ' + pegsRemaining,
-            fontSize: 20,
-            fontFamily: 'Calibri',
-            fontStyle: 'bold',
-            width: 310,
-            padding: 10,
-            align: 'center',
-            cornerRadius: 10
-        });
-
-        /** Create on-screen text displaying some kind of instructions */
-        scoringText = new Kinetic.Text({
-            y: 40,
-            fill: '#4E1207',
-            text: 'Leave 1 peg and you\'re a genius.\nLeave 2 pegs and ' +
-            'you\'re pretty smart.\nLeave 3 pegs and you\'re just average.\n' +
-            'Leave 4 or more and you\'re just plain dumb.',
-            fontSize: 16,
-            fontStyle: 'bold',
-            fontFamily: 'Calibri',
-            lineHeight: 1.5,
-            padding: 10,
-            width: 335,
-            align: 'center'
-        });
-
-        mainHud.add(mainHudRect);
-        mainHud.add(pegsRemainingText);
-        mainHud.add(scoringText);
-        hud.add(mainHud);
-
-        var resetButton = new Kinetic.Group({
-            x: 88, y: 180
-        });
-
-        var resetButtonRect = new Kinetic.Rect({
-            width: 150, height: 35,
-            fill: '#DA9E62', stroke: '#4E1207', strokeWidth: 3
-        });
-
-        resetButtonText = new Kinetic.Text({
-            fill: '#4E1207',
-            text: 'Reset Game',
-            fontSize: 18,
-            fontFamily: 'Calibri',
-            fontStyle: 'bold',
-            width: 150,
-            padding: resetButtonRect.getHeight() / 4,
-            align: 'center'
-        });
-
-        resetButton.on('mouseover', function () {
-            resetButtonRect.setFill('#EAAE72');
-            document.body.style.cursor = 'pointer';
-            textLayer.draw();
-        });
-
-        resetButton.on('mouseleave', function () {
-            resetButtonRect.setFill('#DA9E62');
-            document.body.style.cursor = 'auto';
-            textLayer.draw();
-        });
-
-        resetButton.on('click tap', function () {
-            if (pegsRemaining != 14) resetGame();
-        });
-
-        resetButton.add(resetButtonRect);
-        resetButton.add(resetButtonText);
-        hud.add(resetButton);
+        hud.add(createHUD());
+        hud.add(createResetButton());
 
 
         /** Add all objects to their respective layers */
@@ -243,7 +158,7 @@
     }
 
     /** Creates and returns a hole at a given (x,y) position */
-    function createHole(posX, posY) {
+    function createHole (posX, posY) {
         return new Kinetic.Circle({
             x: posX,
             y: posY,
@@ -255,7 +170,7 @@
     }
 
     /** Creates and returns a peg at a given (x,y) position */
-    function createPeg(posX, posY) {
+    function createPeg (posX, posY) {
         return new Kinetic.Circle({
             x: posX,
             y: posY,
@@ -265,6 +180,92 @@
             stroke: pegStrokeColor,
             strokeWidth: 2
         });
+    }
+
+    function createHUD() {
+        var hud = new Kinetic.Group();
+
+        var hudRect = new Kinetic.Rect({
+            width: 340, height: 160,
+            stroke: '#4E1207', strokeWidth: 3,
+            fillPatternImage: boardTexture
+        });
+
+        /** Create on-screen counter to indicate number of pegs remaining */
+        pegsRemainingText = new Kinetic.Text({
+            fill: '#4E1207',
+            text: 'Pegs Remaining: ' + pegsRemaining,
+            fontSize: 20,
+            fontFamily: 'Calibri',
+            fontStyle: 'bold',
+            width: 340,
+            padding: 10,
+            align: 'center',
+            cornerRadius: 10
+        });
+
+        /** Create on-screen text displaying some kind of instructions */
+        var scoringText = new Kinetic.Text({
+            y: 40,
+            fill: '#4E1207',
+            text: 'Leave 1 peg and you\'re a genius.\nLeave 2 pegs and ' +
+            'you\'re pretty smart.\nLeave 3 pegs and you\'re just average.\n' +
+            'Leave 4 or more and you\'re just plain dumb.',
+            fontSize: 16,
+            fontStyle: 'bold',
+            fontFamily: 'Calibri',
+            lineHeight: 1.5,
+            padding: 10,
+            width: 340,
+            align: 'center'
+        });
+
+        hud.add(hudRect);
+        hud.add(pegsRemainingText);
+        hud.add(scoringText);
+        return hud;
+    }
+
+    function createResetButton() {
+        var resetButton = new Kinetic.Group({
+            x: 88, y: 180
+        });
+
+        var resetButtonRect = new Kinetic.Rect({
+            width: 170, height: 35,
+            fill: '#DA9E62', stroke: '#4E1207', strokeWidth: 3
+        });
+        resetButton.add(resetButtonRect);
+
+        var resetButtonText = new Kinetic.Text({
+            fill: '#4E1207',
+            text: 'Reset Game',
+            fontSize: 18,
+            fontFamily: 'Calibri',
+            fontStyle: 'bold',
+            width: 170,
+            padding: resetButtonRect.getHeight() / 4,
+            align: 'center'
+        });
+        resetButton.add(resetButtonText);
+
+        resetButton.on('mouseover', function () {
+            resetButtonRect.setFill('#EAAE72');
+            document.body.style.cursor = 'pointer';
+            textLayer.draw();
+        });
+
+        resetButton.on('mouseleave', function () {
+            resetButtonRect.setFill('#DA9E62');
+            document.body.style.cursor = 'auto';
+            textLayer.draw();
+        });
+
+        resetButton.on('click tap', function () {
+            if (pegsRemaining != 14) resetGame();
+        });
+
+        return resetButton;
     }
 
     /** Returns whether or not a hole with a given index is currently
