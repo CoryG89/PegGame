@@ -427,6 +427,7 @@
 
     /** Resets the game to the original starting state */
     function resetGame() {
+        deactivatePegs();
         for (var i = 0; i < holeCount; i++) {
 
             /** Reset pegs in all but the last hole */
@@ -510,14 +511,14 @@
     /** Deactivates all of the pegs after a move has been made */
     function deactivatePegs() {
         for (var i = 0; i < hole.length; i++) {
-            if (isPegEnabled(i) && isPegActive(i)) {
+            if (i != hole.length - 1) {
                 peg[i].setDraggable(false);
                 peg[i].off('dragstart');
                 peg[i].off('mouseover');
                 peg[i].off('mouseout');
                 peg[i].attrs.active = false;
+                peg[i].setStroke('white');
             }
-            if (i != hole.length - 1) peg[i].setStroke('white');
             hole[i].setStroke('black');
         }
     }
