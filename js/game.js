@@ -373,10 +373,10 @@
     /** Builds a list of valid moves for the current board configuration
         using the lookup table containing all the possible moves */
     function buildMoveList() {
+        var numValidMoves = 0;
+
         deactivatePegs();
         clearMoveList();
-
-        var numValidMoves = 0;
 
         /** Consider all enabled pegs */
         for (var i = 0; i < pegCount; i++) {
@@ -387,42 +387,48 @@
                 /** Get the board position for the current peg */
                 var pos = getPegPosition(i);
 
-                /** Consider all possible moves for each peg based on its
-                    current board position */
+                /** Consider all possible moves for this peg */
                 for (var j = 0; j < MoveTable[pos].length; j++) {
 
-                    /** Get current move jump and land positions */
+                    /** Get 'jump' and 'land' positions for this move */
                     var jumpPos = MoveTable[pos][j].jumpPos;
                     var landPos = MoveTable[pos][j].landPos
 
-                    /** Activate peg if inactive, record valid move */
-                    if (isHoleOccupied(jumpPos) && !isHoleOccupied(landPos)) {
-                        if (!pegActivated) activatePeg(peg[i]);
+                    if (isMoveValid(jumpPos, landPos)) {
                         validMoves[i][moveCount] = MoveTable[pos][j];
                         moveCount++;
+                        if (!pegActivated) 
+                            activatePeg(peg[i]);
                     }
                 }
                 numValidMoves += moveCount;
             }
         }
-        if (numValidMoves == 0) {
-            var msg = null;
-            switch (pegsRemaining) {
-                case 1:
-                    msg = 'You\'re a genius!!';
-                    break;
-                case 2:
-                    msg = 'You\'re pretty smart.';
-                    break;
-                case 3:
-                    msg = 'You\'re just average.';
-                    break;
-                default:
-                    msg = 'You\'re just plain dumb!!';
-                    break;
-            }
-            alert(msg);
+        if (numValidMoves === 0) gameOverMessage();
+    }
+
+    function isMoveValid (jumpPos, landPos) {
+        return isHoleOccupied(jumpPos) && !isHoleOccupied(landPos);
+    }
+
+    /** Displays particular game over msg based on number of remaining pegs */
+    function gameOverMessage() {
+        var msg;
+        switch (pegsRemaining) {
+            case 1:
+                msg = 'You\'re a genius!!';
+                break;
+            case 2:
+                msg = 'You\'re pretty smart.';
+                break;
+            case 3:
+                msg = 'You\'re just average.';
+                break;
+            default:
+                msg = 'You\'re just plain dumb!!';
+                break;
         }
+        alert(msg);
     }
 
     /** Resets the game to the original starting state */
