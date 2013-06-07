@@ -1,18 +1,26 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-    <!-- Created by Cory Gross, after eating Cracker Barrel. 12/30/12 -->
+    <!-- Author: Cory Gross
+          After eating Cracker Barrel, December 30, 2012
+      
+          Last Modified: June 6, 2013
+    -->
+
     <title>The Peg Game</title>
-    <!-- Include custom style sheet -->
-    <link href="css/styles.css" type="text/css" rel="stylesheet" /> 
-    <!-- Include KineticJS Canvas framework -->
-    <script src='js/kinetic-v4.5.3.min.js' type='text/javascript'></script>
-    <!-- Include lookup table with all possible moves in the game -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, 
+                user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+    <!-- Include KineticJS libary easy dealings with the Canvas API -->
+    <script type="text/javascript" src="js/kinetic-v4.5.3.min.js"></script>
+
+    <!-- My list of all possible moves for the game -->
     <script src='js/move-table.js' type='text/javascript'></script>
-    <!-- Include game logic script -->
-    <script src='js/game.js' type='text/javascript'></script>
+
   </head>
-  <body>
+  <body style="overflow: hidden; margin: 0px; padding: 0px;">
     <div id='container'></div>
+    <script src='js/game.js' type='text/javascript'></script>
   </body>
 </html>
