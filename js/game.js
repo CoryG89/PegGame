@@ -3,12 +3,13 @@
  *  Last modified: June 6, 2013
  **/
 (function () {
-    /** Load assets before anything else, initialize only after */
+
+    /** Load assets before anything else, initialize only afterwards */
     var boardTexture = new Image();
     boardTexture.onload = function () { init(); };
     boardTexture.src = 'img/wood-texture.jpg';
 
-    /** Properties which can be set to customize the game */
+    /** Properties which can be set in order to customize the game */
     var stageWidth = 800;
     var stageHeight = 600;
     var pegColor = '#dcdcdc';
@@ -22,11 +23,11 @@
     var jumpStrokeColor = 'red';
     var landStrokeColor = 'blue';
 
-    /** Declare variables to store our game objects */
-    var stage, bgLayer, pegLayer, textLayer;
-    var hole, holeCount, peg, pegCount, pegsRemaining;
-    var validMoves, boardPos, boardCenter;
-    var pegsRemainingText;
+    /** Declare needed globals set during initialization */
+    var gameLayer, hudLayer;
+    var hole, holeCount, peg, pegCount;
+    var validMoves, boardPos;
+    var pegsRemaining, pegsRemainingText;
 
     function init() {
         var containerElement = document.getElementById('container');
@@ -34,7 +35,7 @@
         containerElement.style.height = stageHeight + 'px';
 
         /** Create our KineticJS stage using our canvas container */
-        stage = new Kinetic.Stage({
+        var stage = new Kinetic.Stage({
             container: 'container',
             width: stageWidth,
             height: stageHeight
@@ -42,23 +43,23 @@
 
         /** Define where the center of the board will be positioned. Used as a
             reference point for positioning the pegs and holes on the board */
-        boardCenter = {
+        var boardCenter = {
             x: stage.getWidth() / 2 - 110,
             y: stage.getHeight() / 2 + 110
         };
 
-        /** Create all needed game layers */
-        bgLayer = new Kinetic.Layer();
-        pegLayer = new Kinetic.Layer();
-        textLayer = new Kinetic.Layer();
-
         /** Create and add a background image to its own layer, this layer will
             only be drawn once */
+        var bgLayer = new Kinetic.Layer();
         var background = new Kinetic.Rect({
             width: 800, height: 600, fill: 'white'
         });
         bgLayer.add(background);
 
+        /** Create our dynamic layers */
+        gameLayer = new Kinetic.Layer();
+        hudLayer = new Kinetic.Layer();
+        
         /** Create the triangular wooden game board */
         wood = new Kinetic.RegularPolygon({
             x: boardCenter.x,
@@ -71,6 +72,7 @@
             stroke: boardStrokeColor,
             strokeWidth: 3
         });
+        bgLayer.add(wood);
 
         /** Create arrays to store hole and peg objects */
         hole = [];
@@ -98,16 +100,17 @@
             var numHoles = 5 - i;
             for (var j = 0; j < numHoles; j++) {
 
-                /** Calculate the x,y offset of the current hole */
+                /** Calculate x,y offset from board center for current hole */
                 var posX = (numHoles - 1) * -30 + j * 60 + boardCenter.x;
                 var posY = -60 * i + 70 + boardCenter.y;
                 boardPos[holeCount] = { x: posX, y: posY };
 
-                /** Create a new hole and add it to the group */
-                var newHole = createHole(posX, posY);
-                hole[holeCount] = newHole;
+                /** Create a new hole with the calculated position  */
+                hole[holeCount] = createHole(posX, posY);
+                gameLayer.add(hole[holeCount]);
 
-                if (holeCount < 14) {	/** pegs in all the but last hole */
+                /** Also create pegs for all positions, except the last */
+                if (holeCount < 14) {
 
                     /** Create a new peg and add it to the group */
                     var newPeg = createPeg(posX, posY);
@@ -121,37 +124,26 @@
 
                     /** Set corresponding hole occupied, increment peg count */
                     setHoleOccupied(holeCount, true);
+                    gameLayer.add(peg[pegCount]);
                     pegCount++;
-
                 }
                 else {
-                    /** Make sure the last hole is not marked occupied */
+                    /** Make sure the last hole is marked not occupied */
                     setHoleOccupied(holeCount, false);
                 }
+
                 holeCount++; 
             }
         }
 
-        var hud = new Kinetic.Group({
-            x: 430, y: 30
-        });
-        hud.add(createHUD());
-        hud.add(createResetButton());
-
-
-        /** Add all objects to their respective layers */
-        textLayer.add(hud);
-
-        bgLayer.add(wood);
-        for (var i = 0; i < holeCount; i++) {
-            pegLayer.add(hole[i]);
-            if (i < 14) pegLayer.add(peg[i]);
-        }
+        /** Create the HUD */
+        var hud = createHUD(hudLayer);
+        hudLayer.add(hud);
 
         /** Add all of the game layers to the stage */
         stage.add(bgLayer);
-        stage.add(pegLayer);
-        stage.add(textLayer);
+        stage.add(gameLayer);
+        stage.add(hudLayer);
 
         /** Build the initial move list */
         buildMoveList();
@@ -183,7 +175,11 @@
     }
 
     function createHUD() {
-        var hud = new Kinetic.Group();
+        var hud = new Kinetic.Group({
+            x: 430, y: 30
+        });
+
+        var main = new Kinetic.Group();
 
         var hudRect = new Kinetic.Rect({
             width: 340, height: 160,
@@ -220,9 +216,13 @@
             align: 'center'
         });
 
-        hud.add(hudRect);
-        hud.add(pegsRemainingText);
-        hud.add(scoringText);
+        main.add(hudRect);
+        main.add(pegsRemainingText);
+        main.add(scoringText);
+
+        hud.add(main);
+        hud.add(createResetButton());
+
         return hud;
     }
 
@@ -252,13 +252,13 @@
         resetButton.on('mouseover', function () {
             resetButtonRect.setFill('#EAAE72');
             document.body.style.cursor = 'pointer';
-            textLayer.draw();
+            hudLayer.draw();
         });
 
         resetButton.on('mouseleave', function () {
             resetButtonRect.setFill('#DA9E62');
             document.body.style.cursor = 'auto';
-            textLayer.draw();
+            hudLayer.draw();
         });
 
         resetButton.on('click tap', function () {
@@ -365,10 +365,10 @@
         setPegEnabled(index, false);
         peg[index].attrs.active = false;
         setHoleOccupied(getPegPosition(index), false);
-        pegLayer.draw();
+        gameLayer.draw();
         pegsRemaining--;
         pegsRemainingText.setText('Pegs Remaining: ' + pegsRemaining);
-        textLayer.draw();
+        hudLayer.draw();
     }
 
     /** Builds a list of valid moves for the current board configuration
@@ -453,7 +453,7 @@
         }
 
         /** Redraw the peg layer for original peg layout */
-        pegLayer.draw();
+        gameLayer.draw();
         
         /** Reset the GUI */
         pegsRemaining = 14;
@@ -483,17 +483,16 @@
     /** Activates a given peg, adding necessary event handlers and
         setting the pegs active flag */
     function activatePeg(peg) {
-
         peg.setDraggable(true);
         peg.on('dragstart', function () { return onActivePegDragStart(peg); });
         peg.on('dragend', function () { return onActivePegDragEnd(peg); });
         peg.on('mouseover', function () {
             peg.setStroke(activeStrokeColor);
-            pegLayer.draw();
+            gameLayer.draw();
         });
         peg.on('mouseout', function () {
             peg.setStroke('white');
-            pegLayer.draw();
+            gameLayer.draw();
         });
 
         peg.attrs.active = true;
@@ -502,7 +501,6 @@
     /** Sets the peg position based on the given move, removes
         the peg being jumped, and recalculates new valid moves */
     function movePeg(peg, move) {
-
         var pIndex = getPegIndex(peg);
         var jIndex = getPegIndex(getPegAtPosition(move.jumpPos));
 
@@ -574,7 +572,7 @@
                 peg.setY(boardPos[pegPosition].y);
             }
         }
-        pegLayer.draw();
+        gameLayer.draw();
     }
 
 })();
