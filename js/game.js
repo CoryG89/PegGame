@@ -48,8 +48,8 @@
             y: stage.getHeight() / 2 + 110
         };
 
-        /** Create and add a background image to its own layer, this layer will
-            only be drawn once */
+        /** Create and add a background image to its own layer,
+            this layer will only be drawn once */
         var bgLayer = new Kinetic.Layer();
         var background = new Kinetic.Rect({
             width: 800, height: 600, fill: 'white'
@@ -61,7 +61,7 @@
         hudLayer = new Kinetic.Layer();
         
         /** Create the triangular wooden game board */
-        wood = new Kinetic.RegularPolygon({
+        var wood = new Kinetic.RegularPolygon({
             x: boardCenter.x,
             y: boardCenter.y,
             sides: 3,
@@ -119,17 +119,17 @@
                     /** Initialize peg properties */
                     peg[pegCount].attrs.active = false;
                     peg[pegCount].attrs.pegIndex = pegCount;
-                    setPegPosition(pegCount, holeCount);
-                    setPegEnabled(pegCount, true);
+                    peg[pegCount].attrs.boardPos = pegCount;
+                    peg[pegCount].attrs.enabled = true;
 
                     /** Set corresponding hole occupied, increment peg count */
-                    setHoleOccupied(holeCount, true);
+                    hole[holeCount].attrs.occupied = true;
                     gameLayer.add(peg[pegCount]);
                     pegCount++;
                 }
                 else {
                     /** Make sure the last hole is marked not occupied */
-                    setHoleOccupied(holeCount, false);
+                    hole[holeCount].attrs.occupied = false;
                 }
 
                 holeCount++; 
@@ -174,6 +174,7 @@
         });
     }
 
+    /** Create the on-screen heads up display */
     function createHUD() {
         var hud = new Kinetic.Group({
             x: 430, y: 30
@@ -226,6 +227,7 @@
         return hud;
     }
 
+    /** Create a button for the HUD to reset the game */
     function createResetButton() {
         var resetButton = new Kinetic.Group({
             x: 88, y: 180
@@ -268,64 +270,6 @@
         return resetButton;
     }
 
-    /** Returns whether or not a hole with a given index is currently
-        occupied by a peg */
-    function isHoleOccupied(index) {
-        if (index >= 0 && index < 15)
-            return hole[index].attrs.occupied;
-        else
-            return null;
-    }
-
-    /** Returns the board position of a peg with a given index */
-    function getPegPosition(index) {
-        if (index >= 0 && index < 14)
-            return peg[index].attrs.boardPos;
-        else
-            return null;
-    }
-
-    /** Returns whether or not a peg with a given index is enabled.
-        All pegs are initially enabled, becoming disabled when they
-        are jumped and removed from the board */
-    function isPegEnabled(index) {
-        if (index >= 0 && index < 14)
-            return peg[index].attrs.enabled;
-        else
-            return null;
-    }
-
-    /** Returns whether or not a peg with a given index is active.
-        All pegs are initially inactive, becoming active when the
-        peg can make a valid move on the board */
-    function isPegActive(index) {
-        if (index >= 0 && index < 14)
-            return peg[index].attrs.active;
-        else
-            return null;
-    }
-
-
-    /** Sets the occupied state of a hole at a given index to the
-        given boolean value */
-    function setHoleOccupied(index, boolValue) {
-        if (boolValue === true || boolValue === false) {
-            hole[index].attrs.occupied = boolValue;
-            return true;
-        }
-        else return false;
-    }
-
-    /** Sets the enabled state of a peg at a given index to the
-        given boolean value */
-    function setPegEnabled(index, boolValue) {
-        if (boolValue === true || boolValue === false) {
-            peg[index].attrs.enabled = boolValue;
-            return true;
-        }
-        else return false;
-    }
-
     /** Returns whether or not a peg is near a hole based on a
         certain offset */
     function isPegNearHole(pegIndex, holeIndex) {
@@ -343,18 +287,7 @@
         var yAligned = pegY > holeY - offset && pegY < holeY + offset;
 
         /** Return correct value based on position and offset */
-        if (xAligned && yAligned) return true;
-        else return false;
-    }
-
-    /** Sets the board position of a peg at a given index to the
-        position indicated by pos */
-    function setPegPosition(index, pos) {
-        if (index >= 0 && index < 14 && pos >= 0 && pos < 15) {
-            peg[index].attrs.boardPos = pos;
-            return true;
-        }
-        else return false;
+        return xAligned && yAligned;
     }
 
     /** Removes a peg at a given index from the board. This involves
@@ -362,9 +295,9 @@
         the hole unoccupied, and redrawing the peg layer */
     function removePeg(index) {
         peg[index].setVisible(false);
-        setPegEnabled(index, false);
+        peg[index].attrs.enabled = false;
         peg[index].attrs.active = false;
-        setHoleOccupied(getPegPosition(index), false);
+        hole[peg[index].attrs.boardPos].attrs.occupied = false;
         gameLayer.draw();
         pegsRemaining--;
         pegsRemainingText.setText('Pegs Remaining: ' + pegsRemaining);
@@ -381,12 +314,12 @@
 
         /** Consider all enabled pegs */
         for (var i = 0; i < pegCount; i++) {
-            if (isPegEnabled(i)) {
+            if (peg[i].attrs.enabled) {
                 var moveCount = 0;
                 var pegActivated = false;
 
                 /** Get the board position for the current peg */
-                var pos = getPegPosition(i);
+                var pos = peg[i].attrs.boardPos;
 
                 /** Consider all possible moves for this peg */
                 for (var j = 0; j < MoveTable[pos].length; j++) {
@@ -408,8 +341,10 @@
         if (numValidMoves === 0) gameOverMessage();
     }
 
+    /** Determines whether or not a move is valid by checking that the
+        the hole to be jumped is occupied and the hole to land on is not */
     function isMoveValid (jumpPos, landPos) {
-        return isHoleOccupied(jumpPos) && !isHoleOccupied(landPos);
+        return hole[jumpPos].attrs.occupied && !hole[landPos].attrs.occupied;
     }
 
     /** Displays particular game over msg based on number of remaining pegs */
@@ -439,26 +374,26 @@
 
             /** Reset pegs in all but the last hole */
             if (i != holeCount - 1) {
-                setPegPosition(i, i);
+                peg[i].attrs.boardPos = i;
                 peg[i].setX(boardPos[i].x);
                 peg[i].setY(boardPos[i].y);
                 peg[i].setVisible(true);
-                setPegEnabled(i, true);
-                setHoleOccupied(i, true);
+                peg[i].attrs.enabled = true;
+                hole[i].attrs.occupied = true;
             }
             else {
                 /** Make sure the last hole isn't set as occupied */
-                setHoleOccupied(i, false);
+                hole[i].attrs.occupied = false;
             }
         }
 
-        /** Redraw the peg layer for original peg layout */
+        /** Redraw the game layer */
         gameLayer.draw();
         
         /** Reset the GUI */
         pegsRemaining = 14;
         pegsRemainingText.setText('Pegs Remaining: ' + pegsRemaining);
-        textLayer.draw();
+        hudLayer.draw();
 
         /** Rebuild the list of current possible moves */
         buildMoveList();
@@ -467,49 +402,34 @@
     /** Returns the peg at the given board position, returns null if
         there is no peg at that position */
     function getPegAtPosition(pos) {
-        for (var i = 0; i < pegCount; i++) {
-            if (isPegEnabled(i)) {
-                if (peg[i].attrs.boardPos == pos) return peg[i];
-            }
-        }
+        for (var i = 0; i < pegCount; i++)
+            if (peg[i].attrs.boardPos === pos && peg[i].attrs.enabled)
+                return peg[i];
         return null;
-    }
-
-    /** Returns the index of the given peg */
-    function getPegIndex(peg) {
-        return peg.attrs.pegIndex;
     }
 
     /** Activates a given peg, adding necessary event handlers and
         setting the pegs active flag */
     function activatePeg(peg) {
+        peg.on('dragstart', onActivePegDragStart);
+        peg.on('dragend', onActivePegDragEnd);
+        peg.on('mouseover', onActivePegMouseOver);
+        peg.on('mouseout', onActivePegMouseOut);
         peg.setDraggable(true);
-        peg.on('dragstart', function () { return onActivePegDragStart(peg); });
-        peg.on('dragend', function () { return onActivePegDragEnd(peg); });
-        peg.on('mouseover', function () {
-            peg.setStroke(activeStrokeColor);
-            gameLayer.draw();
-        });
-        peg.on('mouseout', function () {
-            peg.setStroke('white');
-            gameLayer.draw();
-        });
-
         peg.attrs.active = true;
     }
 
     /** Sets the peg position based on the given move, removes
         the peg being jumped, and recalculates new valid moves */
     function movePeg(peg, move) {
-        var pIndex = getPegIndex(peg);
-        var jIndex = getPegIndex(getPegAtPosition(move.jumpPos));
-
+        var jumpPeg = getPegAtPosition(move.jumpPos);
+        var pIndex = peg.attrs.pegIndex;
         peg.setX(boardPos[move.landPos].x);
         peg.setY(boardPos[move.landPos].y);
-        removePeg(jIndex);
-        setHoleOccupied(getPegPosition(pIndex), false);
-        setHoleOccupied(move.landPos, true);
-        setPegPosition(pIndex, move.landPos);
+        removePeg(jumpPeg.attrs.pegIndex);
+        hole[peg.attrs.boardPos].attrs.occupied = false;
+        hole[move.landPos].attrs.occupied = true;
+        peg.attrs.boardPos = move.landPos;
         buildMoveList();
     }
 
@@ -519,6 +439,7 @@
             if (i != hole.length - 1) {
                 peg[i].setDraggable(false);
                 peg[i].off('dragstart');
+                peg[i].off('dragend');
                 peg[i].off('mouseover');
                 peg[i].off('mouseout');
                 peg[i].attrs.active = false;
@@ -537,8 +458,8 @@
 
     /** Invoked on an active peg when it is dragged, this will add
         strokes to indicate the possible moves */
-    function onActivePegDragStart(peg) {
-        var moveList = validMoves[peg.attrs.pegIndex];
+    function onActivePegDragStart() {
+        var moveList = validMoves[this.attrs.pegIndex];
 
         for (var i = 0; i < moveList.length; i++) {
             var move = moveList[i];
@@ -547,16 +468,16 @@
             jumpPeg.setStroke(jumpStrokeColor);
             hole[move.landPos].setStroke(landStrokeColor);
         }
-        peg.moveToTop();
+        this.moveToTop();
     }
 
     /** Invoked on an active peg when it is dropped, this will update
         necessary data structures and determine if a collision with
         a proper hole has been made so that a move can be made */
-    function onActivePegDragEnd(peg) {
-        var pIndex = getPegIndex(peg);
+    function onActivePegDragEnd() {
+        var pIndex = this.attrs.pegIndex;
+        var pegPosition = this.attrs.boardPos;
         var moveList = validMoves[pIndex];
-        var pegPosition = getPegPosition(pIndex);
 
         for (var i = 0; i < moveList.length; i++) {
             var move = moveList[i];
@@ -565,13 +486,25 @@
             hole[move.landPos].setStroke('black');
             jumpPeg.setStroke('white');
 
-            if (isPegNearHole(getPegIndex(peg), move.landPos)) {
-                movePeg(peg, move);
+            if (isPegNearHole(pIndex, move.landPos)) {
+                movePeg(this, move);
             } else if (i == moveList.length - 1) {
-                peg.setX(boardPos[pegPosition].x);
-                peg.setY(boardPos[pegPosition].y);
+                this.setX(boardPos[pegPosition].x);
+                this.setY(boardPos[pegPosition].y);
             }
         }
+        gameLayer.draw();
+    }
+
+    /** Invoked whenever a mouse cursor is over an active peg */
+    function onActivePegMouseOver() {
+        this.setStroke(activeStrokeColor);
+        gameLayer.draw();
+    }
+
+    /** Invoked whenever the mouse cursor leaves an active peg */
+    function onActivePegMouseOut () {
+        this.setStroke('white');
         gameLayer.draw();
     }
 
